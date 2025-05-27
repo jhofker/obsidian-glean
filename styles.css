@@ -1,0 +1,48 @@
+/* Glean Plugin Styles */
+
+.glean-settings-status {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.validation-result {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.validation-success {
+    background-color: var(--color-green-rgb);
+    color: var(--text-on-accent);
+    border: 1px solid var(--color-green);
+}
+
+.validation-error {
+    background-color: var(--color-red-rgb);
+    color: var(--text-on-accent);
+    border: 1px solid var(--color-red);
+}
+
+.validation-loading {
+    background-color: var(--color-blue-rgb);
+    color: var(--text-on-accent);
+    border: 1px solid var(--color-blue);
+}
+
+/* Ensure proper opacity for validation backgrounds */
+.validation-success {
+    background-color: rgba(var(--color-green-rgb), 0.1);
+    color: var(--color-green);
+}
+
+.validation-error {
+    background-color: rgba(var(--color-red-rgb), 0.1);
+    color: var(--color-red);
+}
+
+.validation-loading {
+    background-color: rgba(var(--color-blue-rgb), 0.1);
+    color: var(--color-blue);
+}
