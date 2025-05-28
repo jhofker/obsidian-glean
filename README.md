@@ -95,8 +95,22 @@ Responses appear as formatted callouts in your notes:
 | **Glean Instance Name** | Your company's Glean domain name | (empty) |
 | **API Key** | Your Glean API token with CHAT scope | (empty) |
 | **Request Timeout** | Timeout for API requests in milliseconds | 30000 |
+| **Use CORS-Free Methods** | Use Obsidian's built-in request method to bypass CORS restrictions | true (recommended) |
 
 ## Troubleshooting
+
+### CORS Issues
+
+If you encounter CORS (Cross-Origin Resource Sharing) errors:
+
+1. **Enable CORS-Free Methods** (recommended):
+   - Go to plugin settings
+   - Toggle ON "Use CORS-Free Methods"
+   - This uses Obsidian's built-in `requestUrl` which bypasses browser CORS restrictions
+
+2. **Alternative solutions**:
+   - If CORS-free methods don't work, toggle OFF "Use CORS-Free Methods" to use the standard Glean client
+   - Check your network setup - some corporate firewalls may interfere with requests
 
 ### Connection Issues
 
@@ -105,7 +119,8 @@ If you see "Connection failed" errors:
 1. Verify your instance name is correct (just the domain part, not the full URL)
 2. Check that your API key has the correct `CHAT` scope permissions
 3. Ensure your network allows connections to your Glean instance
-4. Try the "Test Connection" button in settings
+4. Try toggling the "Use CORS-Free Methods" setting
+5. Try the "Test Connection" button in settings
 
 ### No Response or Empty Response
 
@@ -145,12 +160,23 @@ npm run install-plugin
 
 ```
 src/
-├── main.ts          # Main plugin class and slash command implementation
-├── settings.ts      # Settings interface and configuration management
-styles.css           # Plugin styling
-manifest.json        # Plugin manifest
-package.json         # Dependencies and build scripts
+├── main.ts              # Main plugin class (minimal, uses modules)
+├── glean-client.ts      # Glean API operations (pure functions)
+├── slash-command.ts     # Slash command implementation (modular)
+├── settings.ts          # Settings management (functional approach)
+styles.css               # Plugin styling
+manifest.json            # Plugin manifest
+package.json             # Dependencies and build scripts
 ```
+
+### Architecture
+
+The plugin uses a **modern modular architecture** with:
+
+- **Pure Functions**: Most functionality is implemented as pure functions for better testability
+- **Separation of Concerns**: Each module has a single responsibility
+- **Minimal Classes**: Only using classes where required by Obsidian's API
+- **Functional Composition**: Modules work together through function composition
 
 ## Privacy and Security
 
