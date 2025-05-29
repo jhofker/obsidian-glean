@@ -1,7 +1,7 @@
 {
     "id": "ask-glean",
     "name": "Glean",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "minAppVersion": "1.7.0",
     "description": "Ask Glean",
     "author": "Jordan Hofker",
