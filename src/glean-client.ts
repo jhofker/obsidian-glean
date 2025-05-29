@@ -22,7 +22,6 @@ export function initializeGleanClient(settings: GleanSettings): void {
   }
 }
 
-// Alternative CORS-free implementation using Obsidian's requestUrl
 export async function queryGleanWithoutCors(
   query: string,
   settings: GleanSettings
@@ -32,13 +31,8 @@ export async function queryGleanWithoutCors(
   }
 
   try {
-    console.log("Querying Glean (CORS-free):", query);
-    console.log("Instance:", settings.instanceName);
-
     const url = `https://${settings.instanceName}-be.glean.com/rest/api/v1/chat`;
-    console.log("Request URL:", url);
 
-    // Corrected request body structure based on Glean API docs
     const requestBody = {
       messages: [
         {
@@ -53,9 +47,6 @@ export async function queryGleanWithoutCors(
       ],
     };
 
-    console.log("Request body:", JSON.stringify(requestBody, null, 2));
-    console.log("Making CORS-free request...");
-
     const response = await requestUrl({
       url: url,
       method: "POST",
@@ -65,31 +56,23 @@ export async function queryGleanWithoutCors(
         Accept: "application/json",
       },
       body: JSON.stringify(requestBody),
-      throw: false, // Don't throw on HTTP errors, let us handle them
+      throw: false,
     });
 
-    console.log("Response status:", response.status);
-    console.log("Response headers:", response.headers);
-    console.log("Raw response text:", response.text);
-
-    // Check if the request was successful
     if (response.status < 200 || response.status >= 300) {
       console.error("Request failed with status:", response.status);
       console.error("Error response body:", response.text);
       throw new Error(`HTTP ${response.status}: ${response.text || "Unknown error"}`);
     }
 
-    // Parse the response
     let responseData;
     try {
       responseData = response.json;
     } catch (parseError) {
       console.error("Failed to parse JSON response:", parseError);
-      console.log("Raw response text:", response.text);
       throw new Error("Failed to parse response as JSON");
     }
 
-    // Process the response and format it
     try {
       const formattedResponse = formatGleanResponse(responseData, query);
       return formattedResponse;
@@ -114,14 +97,8 @@ export async function testGleanConnectionWithoutCors(settings: GleanSettings): P
   }
 
   try {
-    console.log("Testing Glean connection (CORS-free)...");
-    console.log("Instance:", settings.instanceName);
-    console.log("API Key (first 10 chars):", settings.apiKey.substring(0, 10) + "...");
-
     const url = `https://${settings.instanceName}-be.glean.com/rest/api/v1/chat`;
-    console.log("Test URL:", url);
 
-    // Corrected request body structure based on Glean API docs
     const requestBody = {
       messages: [
         {
@@ -136,9 +113,6 @@ export async function testGleanConnectionWithoutCors(settings: GleanSettings): P
       ],
     };
 
-    console.log("Test request body:", JSON.stringify(requestBody, null, 2));
-    console.log("Making test request...");
-
     const response = await requestUrl({
       url: url,
       method: "POST",
@@ -148,22 +122,15 @@ export async function testGleanConnectionWithoutCors(settings: GleanSettings): P
         Accept: "application/json",
       },
       body: JSON.stringify(requestBody),
-      throw: false, // Don't throw on HTTP errors, let us handle them
+      throw: false,
     });
 
-    console.log("Test response status:", response.status);
-    console.log("Test response headers:", response.headers);
-    console.log("Test response text:", response.text);
-
-    // Check if the request was successful
     if (response.status < 200 || response.status >= 300) {
       console.error("Test failed with HTTP status:", response.status);
       console.error("Error response body:", response.text);
       return false;
     }
 
-    // If we get here without an error, the connection works
-    console.log("Glean connection test successful (CORS-free)");
     return true;
   } catch (error) {
     console.error("Glean connection test failed (CORS-free):", error);
@@ -178,23 +145,19 @@ export async function testGleanConnectionWithoutCors(settings: GleanSettings): P
 
 export async function testGleanConnection(settings: GleanSettings): Promise<boolean> {
   if (settings.useCorsFreeMethods) {
-    // Use CORS-free method
     return await testGleanConnectionWithoutCors(settings);
   }
 
-  // Use original Glean client method
   if (!settings.apiKey || !settings.instanceName) {
     return false;
   }
 
   try {
-    // Create a temporary client for testing
     const testClient = new Glean({
       apiToken: settings.apiKey,
       instance: settings.instanceName,
     });
 
-    // Try a simple test query to verify the connection works - using correct message format
     const testResponse = await testClient.client.chat.create({
       messages: [
         {
@@ -207,11 +170,9 @@ export async function testGleanConnection(settings: GleanSettings): Promise<bool
           ],
         },
       ],
-      timeoutMillis: 10000, // 10 second timeout for test
+      timeoutMillis: 10000,
     });
 
-    // If we get here without an error, the connection works
-    console.log("Glean connection test successful:", testResponse);
     return true;
   } catch (error) {
     console.error("Glean connection test failed:", error);
@@ -221,11 +182,9 @@ export async function testGleanConnection(settings: GleanSettings): Promise<bool
 
 export async function queryGlean(query: string, settings: GleanSettings): Promise<string> {
   if (settings.useCorsFreeMethods) {
-    // Use CORS-free method
     return await queryGleanWithoutCors(query, settings);
   }
 
-  // Use original Glean client method
   if (!gleanClient) {
     initializeGleanClient(settings);
     if (!gleanClient) {
@@ -234,9 +193,6 @@ export async function queryGlean(query: string, settings: GleanSettings): Promis
   }
 
   try {
-    console.log("Querying Glean:", query);
-
-    // Make the actual Chat API call - using correct message format
     const response = await gleanClient.client.chat.create({
       messages: [
         {
@@ -252,7 +208,6 @@ export async function queryGlean(query: string, settings: GleanSettings): Promis
       timeoutMillis: settings.timeout,
     });
 
-    // Process the response and format it
     return formatGleanResponse(response, query);
   } catch (error) {
     console.error("Glean query failed:", error);
@@ -340,12 +295,12 @@ function formatGleanResponse(response: any, originalQuery: string): string {
     });
 
     // If we still have unused citations, add them at the end of the response
-    while (citationIndex < citations.length) {
-      const citation = citations[citationIndex];
-      const citationLink = ` [[📎](${citation.sourceUrl} "${citation.sourceTitle}")]`;
-      responseText += citationLink;
-      citationIndex++;
-    }
+    // while (citationIndex < citations.length) {
+    //   const citation = citations[citationIndex];
+    //   const citationLink = ` [[📎](${citation.sourceUrl} "${citation.sourceTitle}")]`;
+    //   responseText += citationLink;
+    //   citationIndex++;
+    // }
 
     responseText = responseText.trim();
 
@@ -364,12 +319,12 @@ function formatGleanResponse(response: any, originalQuery: string): string {
     });
 
     // Add sources section if we have any
-    if (sources.length > 0) {
-      formattedResponse += `>\n> **Sources:**\n`;
-      sources.forEach((source) => {
-        formattedResponse += `> - ${source}\n`;
-      });
-    }
+    // if (sources.length > 0) {
+    //   formattedResponse += `>\n> **Sources:**\n`;
+    //   sources.forEach((source) => {
+    //     formattedResponse += `> - ${source}\n`;
+    //   });
+    // }
 
     // Add query info and timestamp
     formattedResponse += `>\n> **Query:** "${originalQuery}"\n`;
@@ -384,25 +339,5 @@ function formatGleanResponse(response: any, originalQuery: string): string {
     return `> [!error] Glean Response Error
 > Failed to format response for: "${originalQuery}"
 > Error: ${error.message}`;
-  }
-}
-
-// Debug function to test if requestUrl is working at all
-export async function debugNetworkRequest(): Promise<void> {
-  try {
-    console.log("Testing basic network request...");
-
-    // Test with a simple GET request to a public API
-    const response = await requestUrl({
-      url: "https://httpbin.org/get",
-      method: "GET",
-    });
-
-    console.log("Debug response status:", response.status);
-    console.log("Debug response:", response);
-    console.log("Network request is working!");
-  } catch (error) {
-    console.error("Network request failed:", error);
-    console.error("requestUrl might not be available or working");
   }
 }

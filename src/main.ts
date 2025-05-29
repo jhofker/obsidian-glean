@@ -9,22 +9,14 @@ export default class GleanPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		// Initialize Glean client with current settings
 		initializeGleanClient(this.settings);
 
-		// Add settings tab
 		this.addSettingTab(new GleanSettingTab(this.app, this));
 
-		// Register slash command for /glean
-		console.log('Registering Glean slash command...');
 		this.registerEditorSuggest(createGleanSlashCommand(this.app, () => this.settings));
-		console.log('Glean slash command registered successfully');
-
-		console.log('Glean plugin loaded');
 	}
 
 	onunload() {
-		console.log('Glean plugin unloaded');
 	}
 
 	async loadSettings() {
@@ -33,7 +25,6 @@ export default class GleanPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-		// Reinitialize client when settings change
 		initializeGleanClient(this.settings);
 	}
 }
