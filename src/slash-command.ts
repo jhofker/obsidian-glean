@@ -37,7 +37,6 @@ class GleanSlashCommandImpl extends EditorSuggest<GleanSuggestion> {
     const match = line.match(/(^|\s)\/glean(\s+(.*))?$/);
 
     if (match) {
-      console.log("Found /glean trigger, match:", match);
       const gleanIndex = line.lastIndexOf("/glean");
       const query = match[3] || ""; // The captured group after the space, if any
 
